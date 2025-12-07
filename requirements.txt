@@ -1,0 +1,10 @@
+transformers
+torch
+datasets
+accelerate
+
+fastapi
+uvicorn[standard]
+pydantic
+
+python-dotenv
