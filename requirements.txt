@@ -8,3 +8,13 @@ uvicorn[standard]
 pydantic
 
 python-dotenv
+streamlit
+pandas
+numpy
+scikit-learn
+gigachat
+langchain
+langchain-gigachat
+python-dotenv
+openai-whisper
+streamlit-mic-recorder
