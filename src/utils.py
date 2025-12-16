@@ -1,5 +1,3 @@
-from config.settings import N_RETRY, RETRY_DELAY, TASK_SEMAPHORE
-
 import asyncio
 import logging
 from pydantic import PrivateAttr
@@ -8,8 +6,10 @@ from langchain_gigachat import GigaChat as LangGigaChat
 from config.settings import (
     GIGACHAT_API_KEY,
     DEFAULT_MODEL,
+    N_RETRY,
+    RETRY_DELAY,
+    TASK_SEMAPHORE,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +27,7 @@ class LangChainGigaChatWithLimit(LangGigaChat):
         for attempt in range(N_RETRY):
             try:
                 async with self._semaphore as acquired_request_id:
-                    logger.debug(f"Semaphore acquired for request {acquired_request_id}, {self._semaphore}")
                     result = await super()._agenerate(*args, **kwargs)
-                logger.debug(f"Semaphore released for request {acquired_request_id}")
                 return result
             except Exception as e:
                 last_exception = e
@@ -37,15 +35,13 @@ class LangChainGigaChatWithLimit(LangGigaChat):
 
                 if attempt < N_RETRY - 1:
                     await asyncio.sleep(RETRY_DELAY)
-                else:
-                    logger.exception(f"All {N_RETRY} attempts failed")
 
         raise last_exception
 
 
 def get_llm() -> LangChainGigaChatWithLimit:
     if not GIGACHAT_API_KEY:
-        raise ValueError("Не найден токен GIGACHAT_API_KEY в .env файле")
+        raise ValueError("GIGACHAT_API_KEY not found in .env")
 
     return LangChainGigaChatWithLimit(
         credentials=GIGACHAT_API_KEY,
